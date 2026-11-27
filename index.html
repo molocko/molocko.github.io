@@ -2,17 +2,44 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Вход через GitHub</title>
+  <title>GPU Historia Auth</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; }
+    button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+  </style>
 </head>
 <body>
-  <button id="login-btn">Войти через GitHub</button>
-  
-  <script type="module">
-    // Импортируем функции из Firebase SDK
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Конфигурация вашего проекта GPU Historia
+  <div class="card">
+    <h2>Авторизация</h2>
+    
+    <!-- Кнопки для входа -->
+    <div id="auth-section">
+      <button id="google-btn">Войти через Google</button>
+      <button id="github-btn">Войти через GitHub</button>
+    </div>
+
+    <!-- Профиль вошедшего пользователя -->
+    <div id="user-section" style="display: none;">
+      <p>Привет, <strong id="user-name"></strong>!</p>
+      <button id="logout-btn">Выйти</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // Импортируем необходимые функции из Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      GithubAuthProvider, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Конфигурация для твоего проекта gpu-historia
   const firebaseConfig = {
     apiKey: "AIzaSyDDFGNHsaAYJ7NQ2Twjl-vP1Ld2kz3VDSc",
     authDomain: "gpu-historia.firebaseapp.com",
@@ -22,25 +49,41 @@
     appId: "1:207374575089:web:5bef8b212ea329aa6bd050"
   };
 
-    // Инициализируем Firebase
+    // Инициализация
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GithubAuthProvider(); // Создаем провайдер GitHub [1]
 
-    // Находим кнопку и вешаем обработчик события клика
-    const button = document.getElementById("login-btn");
-    button.addEventListener("click", () => {
-      // Открываем всплывающее окно для авторизации [1]
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          const user = result.user; // Получаем данные пользователя [1]
-          console.log("Успешный вход:", user);
-          alert(`Добро пожаловать, ${user.displayName || user.email || 'пользователь'}!`);
-        })
-        .catch((error) => {
-          console.error("Ошибка авторизации:", error.code, error.message);
-          alert("Не удалось войти: " + error.message);
-        });
+    const authSection = document.getElementById('auth-section');
+    const userSection = document.getElementById('user-section');
+    const userName = document.getElementById('user-name');
+
+    // Наблюдатель за состоянием авторизации
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userName.textContent = user.displayName || user.email || "Пользователь";
+        authSection.style.display = 'none';
+        userSection.style.display = 'block';
+      } else {
+        authSection.style.display = 'block';
+        userSection.style.display = 'none';
+      }
+    });
+
+    // Вход через Google
+    document.getElementById('google-btn').addEventListener('click', () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider).catch(err => console.error("Ошибка Google:", err));
+    });
+
+    // Вход через GitHub
+    document.getElementById('github-btn').addEventListener('click', () => {
+      const provider = new GithubAuthProvider();
+      signInWithPopup(auth, provider).catch(err => console.error("Ошибка GitHub:", err));
+    });
+
+    // Выход из системы
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      signOut(auth).catch(err => console.error("Ошибка выхода:", err));
     });
   </script>
 </body>
