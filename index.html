@@ -1,10 +1,18 @@
-<html><script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Вход через GitHub</title>
+</head>
+<body>
+  <button id="login-btn">Войти через GitHub</button>
+  
+  <script type="module">
+    // Импортируем функции из Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  // Your web app's Firebase configuration
+    // Конфигурация вашего проекта GPU Historia
   const firebaseConfig = {
     apiKey: "AIzaSyDDFGNHsaAYJ7NQ2Twjl-vP1Ld2kz3VDSc",
     authDomain: "gpu-historia.firebaseapp.com",
@@ -14,7 +22,26 @@
     appId: "1:207374575089:web:5bef8b212ea329aa6bd050"
   };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
+    // Инициализируем Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GithubAuthProvider(); // Создаем провайдер GitHub [1]
+
+    // Находим кнопку и вешаем обработчик события клика
+    const button = document.getElementById("login-btn");
+    button.addEventListener("click", () => {
+      // Открываем всплывающее окно для авторизации [1]
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const user = result.user; // Получаем данные пользователя [1]
+          console.log("Успешный вход:", user);
+          alert(`Добро пожаловать, ${user.displayName || user.email || 'пользователь'}!`);
+        })
+        .catch((error) => {
+          console.error("Ошибка авторизации:", error.code, error.message);
+          alert("Не удалось войти: " + error.message);
+        });
+    });
+  </script>
+</body>
 </html>
